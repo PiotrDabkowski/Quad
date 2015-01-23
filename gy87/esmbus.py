@@ -18,8 +18,20 @@ def get_default_bus():
     """
     return 1 # todo you know what 
 
+def fake_base(a):
+    class Fake:
+        def __init__(self, *args):
+            self._delegate = a(*args)
+    for e in dir(a):
+        if e.startswith('__'): continue
+        def meth(self, *args):
+            return getattr(self._delegate, e)(*args)
+        setattr(Fake, e, meth)
+    return Fake
 
-class Esmbus(smbus.SMBus):
+FAKE = fake_base(smbus.SMBus)
+
+class Esmbus(FAKE):
     """Class for communicating with an I2C device using the smbus library.
     Allows reading and writing 8-bit, 16-bit, and byte array values to registers
     on the device."""
@@ -27,7 +39,7 @@ class Esmbus(smbus.SMBus):
         """Create an instance of the I2C device at the specified address on the
         specified I2C bus number."""
         self._address = address
-        smbus.SMBus.__init__(self, get_default_bus())
+        FAKE.__init__(self, get_default_bus())
 
     def writeRaw8(self, value):
         """Write an 8-bit value on the bus (without register)."""

@@ -1,7 +1,7 @@
 # This module allows you to read data from BMP180 pressure sensor with your raspberry pi. Should work with BMP too.
 
 import time
-import esmbus
+import esmbushuhuh
 
 
 # BMP default address.

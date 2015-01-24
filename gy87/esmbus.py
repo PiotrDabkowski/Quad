@@ -1,7 +1,7 @@
 import smbus
 
 class ESMBus:
-    def __init__(self, address, bus = smbus.SMBus(0)):
+    def __init__(self, address, bus = smbus.SMBus(1)):
         self.address = address
         self.bus = bus
 
@@ -24,7 +24,6 @@ class ESMBus:
 
     def writeBit(self, reg, bitNum, data):
         b = self.readU8(reg)
-
         if data != 0:
             b = (b | (1 << bitNum))
         else:
@@ -45,7 +44,6 @@ class ESMBus:
         b >>= (bitStart - length + 1)
 
         return b
-
 
     def writeBits(self, reg, bitStart, length, data):
         #      010 value to write
@@ -167,7 +165,7 @@ class ESMBus:
         endian byte order."""
         return self.readS16(reg, little_endian=True)
 
-    def readS16BE(self, register):
+    def readS16BE(self, reg):
         """Read a signed 16-bit value from the specified register, in big
         endian byte order."""
         return self.readS16(reg, little_endian=False)

@@ -132,24 +132,42 @@ class ESMBus:
             print ("Error accessing 0x%02X: Check your I2C address" % self.address)
             return -1
 
-    def readU16(self, reg):
-        # Reads an unsigned 16-bit value from the I2C device
-        try:
-            hibyte = self.bus.read_byte_data(self.address, reg)
-            result = (hibyte << 8) + self.bus.read_byte_data(self.address, reg + 1)
-            return result
-        except (IOError):
-            print ("Error accessing 0x%02X: Check your I2C address" % self.address)
-            return -1
+    def readU16(self, reg, little_endian=True):
+        """Read an unsigned 16-bit value from the specified register, with the
+        specified endianness (default little endian, or least significant byte
+        first)."""
+        result = self.bus.read_word_data(self.address, reg) & 0xFFFF
+        # Swap bytes if using big endian because read_word_data assumes little
+        # endian on ARM (little endian) systems.
+        if not little_endian:
+            result = ((result << 8) & 0xFF00) + (result >> 8)
+        return result
 
-    def readS16(self, reg):
-        # Reads a signed 16-bit value from the I2C device
-        try:
-            hibyte = self.bus.read_byte_data(self.address, reg)
-            if hibyte > 127:
-                hibyte -= 256
-            result = (hibyte << 8) + self.bus.read_byte_data(self.address, reg + 1)
-            return result
-        except (IOError):
-            print ("Error accessing 0x%02X: Check your I2C address" % self.address)
-            return -1
+    def readS16(self, reg, little_endian=True):
+        """Read a signed 16-bit value from the specified register, with the
+        specified endianness (default little endian, or least significant byte
+        first)."""
+        result = self.readU16(reg, little_endian)
+        if result > 32767:
+            result -= 65536
+        return result
+
+    def readU16LE(self, reg):
+        """Read an unsigned 16-bit value from the specified register, in little
+        endian byte order."""
+        return self.readU16(reg, little_endian=True)
+
+    def readU16BE(self, reg):
+        """Read an unsigned 16-bist value from the specified register, in big
+        endian byte order."""
+        return self.readU16(reg, little_endian=False)
+
+    def readS16LE(self, reg):
+        """Read a signed 16-bit value from the specified register, in little
+        endian byte order."""
+        return self.readS16(reg, little_endian=True)
+
+    def readS16BE(self, register):
+        """Read a signed 16-bit value from the specified register, in big
+        endian byte order."""
+        return self.readS16(reg, little_endian=False)

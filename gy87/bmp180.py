@@ -47,11 +47,10 @@ class BMP180:
     cal_MC = -8711
     cal_MD = 2868
     
-    def __init__(self, bus=None, address=BMP_I2CADDR, mode=BMP_STANDARD, calibrate=True):
+    def __init__(self, address=BMP_I2CADDR, mode=BMP_STANDARD, calibrate=True):
         assert mode in range(4)
         self.mode = mode
-        if bus is None:
-            bus = esmbus.ESMBus(address)
+        bus = esmbus.ESMBus(address)
         self.bus = bus
         if calibrate:
             self._calibrate()

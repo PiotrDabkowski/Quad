@@ -14,8 +14,6 @@ class Motor:
            5 in order to see the results"""
         if not 0<=throttle<=1000:
             raise ValueError('Invalid throttle')
-        if throttle>700:
-            raise ValueError('Not safe yet :D')
         _driver.set_throttle(self._channel, int(throttle))
 
     def __del__(self):

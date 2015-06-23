@@ -19,7 +19,8 @@ class Quad:
     def start(self):
          ex = Thread(target=self._execute_commands)  # executes commands from master
          com = Thread(target=self._communicate)  # sends important parameters to the master
-         mot = Thread(target=self._update_motors())  # updates motors accordingly
+         mot = Thread(target=self._update_motors)  # updates motors accordingly
+         ex.daemon = com.daemon = mot.daemon = True
          ex.start()
          com.start()
          mot.start()

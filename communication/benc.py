@@ -1,3 +1,4 @@
+# byte encoding functions...
 
 def to_bytes(integer, n):
     dl8 = ''

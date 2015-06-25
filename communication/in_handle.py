@@ -4,17 +4,18 @@ import time
 from benc import *
 
 class InPost:
-    def __init__(self, post, delay=0.005, handlers=[], on_fail=None):
-        """Post must allow to get requests from OutPost - method get.
+    def __init__(self, post, handlers=[]):
+        """Handles incoming traffic - dispaches request to appropriate handler.
+        Post must allow to get requests from OutPost - method get.
         It must always return n FULL requests (for example cant return 1.5 request ) """
         self.inp = deque()
         self.post = post
-        self.delay = delay
         self.handlers = {handler.ID:handler.handle for handler in handlers}
-        self.on_fail = on_fail
-        self.handle_loop = threading.Thread(target=self._handle_loop)
         self.STOP = False
-        self.handle_loop.start()
+
+    def on_fail(self):
+        """Called on error in data receiving"""
+        pass
 
     def read_request(self, data):
         """Requests has this format:
@@ -33,10 +34,12 @@ class InPost:
                 if handler is None:
                     #print 'Invalid handler!'
                     continue
-                threading.Thread(target=handler, args=(req,)).start()
+                t = threading.Thread(target=handler, args=(req,))
+                t.daemon = True
+                t.start()
             except:
                 #print 'Invalid request!', data
-                break
+                pass
 
     def _handle_loop(self):
         while not self.STOP:

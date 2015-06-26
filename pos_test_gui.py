@@ -226,23 +226,31 @@ X = visual.vector(1,0,0)
 Y = visual.vector(0,1,0)
 Z = visual.vector(0,0,1)
 
-def on_status_update(status):
-    """"""
-    global PRINTED
+def stat_updater():
     delay = 1
-    show = status['t'] + delay
-    if not PRINTED:
-        print status
-        PRINTED = True
+    feed = updater.status_seq
+    while True:
+        while feed:
+            status = feed.popleft()
+            show = status['t'] + delay
+            dif = show-time.time()
+            if dif>0:
+                print dif
+                visual.sleep(dif)
+            else:
+                print "LATE"
+            show_status(status)
+        visual.sleep(0.01)
+
+
+def show_status(status):
     r, p, y = status["fusionPose"]
     q.reset_rotation()
     q.rotate(p, X)
     q.rotate(r, Y)
     q.rotate(y, Z)
-    while time.time()<show:
-        time.sleep(0.001)
     q.render()
-    scene.center = q.pos
+
 
 
 
@@ -257,7 +265,7 @@ link = Link(quad=False)
 out_handlers = [OutCommander()]
 # OUT handlers - they will be accessed directly so they need to have separate names
 messenger = InInfo(None)
-updater = InStatus(None)
+updater = InStatus(None, on_status_update=None )
 in_handlers = [messenger, updater]
 # Initialise posts, they will not be called directly.
 in_post = InPost(link, handlers=in_handlers)
@@ -267,4 +275,5 @@ inp = Thread(target=out_post._handle_loop)  # sends important parameters to the 
 out.daemon = inp.daemon = True
 out.start()
 inp.start()
-visual.sleep(1000)
+
+stat_updater()

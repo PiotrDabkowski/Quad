@@ -1,14 +1,15 @@
 try:
     import RPIO
+    import RTIMU
 except:
     raise ImportError('You can only run this module on raspberry pi connected to Quad :)')
 
 from threading import Thread
 import time
-import RTIMU
 
 
-#from motor import Motors
+
+from motor import Motors
 from communication.link import Link
 from communication.handlers.commander import InCommander
 from communication.handlers.info import OutInfo
@@ -33,7 +34,7 @@ class Quad:
 
     def __init__(self):
         # initialise motors
-        #self.motors = Motors()
+        self.motors = Motors()
 
         # initialise communication
         self._link = Link(quad=True)  # communication link through my website hehe, quite slow but works for now
@@ -69,7 +70,9 @@ class Quad:
         self._update_state()  # gets data from sensors, this will be main thread.
 
     def _get_status(self):
-        return self._status
+        s = {}
+        s['fusionPose'] = self._status['fusionPose']
+        return s
 
     def _update_state(self):
         s = RTIMU.Settings(SETTINGS_FILE)
@@ -87,16 +90,21 @@ class Quad:
         imu.setCompassEnable(True)
         poll_interval = imu.IMUGetPollInterval()
         self.messenger.send('Started polling IMU...')
+        n = 0
+        sep = int(100/poll_interval)
+        print 'sep', sep
         while True:
             if imu.IMURead():
-                x, y, z = imu.getFusionData()
+                #x, y, z = imu.getFusionData()
                 # print("%f %f %f" % (x,y,z))
                 data = imu.getIMUData()
                 (data["pressureValid"], data["pressure"], data["temperatureValid"],
                  data["temperature"]) = pressure.pressureRead()
                 self._status = data
-                self.updater.send_status()
+                if not n%sep:
+                    self.updater.send_status()
                 time.sleep(poll_interval * 1.0 / 1000.0)
+                n += 1
 
     def _update_motors(self):
         pass

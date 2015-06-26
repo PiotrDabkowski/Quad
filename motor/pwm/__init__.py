@@ -30,18 +30,9 @@ class PWM:
     __INVRT = 0x10
     __OUTDRV = 0x04
 
-    general_call_i2c = Adafruit_I2C(0x00)
-
-    @classmethod
-    def softwareReset(cls):
-        "Sends a software reset (SWRST) command to all the servo drivers on the bus"
-        cls.general_call_i2c.writeRaw8(0x06)  # SWRST
-
     def __init__(self, address=0x40, freq=50):
         self.i2c = Adafruit_I2C(address)
         self.address = address
-        if (self.debug):
-            print "Reseting PCA9685 MODE1 (without SLEEP) and MODE2"
         self.setAllPWM(0, 0)
         self.i2c.write8(self.__MODE2, self.__OUTDRV)
         self.i2c.write8(self.__MODE1, self.__ALLCALL)

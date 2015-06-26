@@ -79,7 +79,7 @@ class Quad:
         imu = RTIMU.RTIMU(s)
         pressure = RTIMU.RTPressure(s)
 
-        if (not imu.IMUInit()):
+        if not (imu.IMUInit() and pressure.pressureInit()):
             self.messenger.send("IMU Init Failed")
             raise RuntimeError('IMU failed! Cant fly')
         else:
@@ -95,15 +95,15 @@ class Quad:
         print 'sep', sep
         while True:
             if imu.IMURead():
-                #x, y, z = imu.getFusionData()
                 # print("%f %f %f" % (x,y,z))
+                print imu.getAccelResiduals()
                 data = imu.getIMUData()
                 (data["pressureValid"], data["pressure"], data["temperatureValid"],
                  data["temperature"]) = pressure.pressureRead()
                 self._status = data
                 if not n%sep:
                     self.updater.send_status()
-                time.sleep(poll_interval * 1.0 / 1000.0)
+                time.sleep(poll_interval * 0.7 / 1000.0)
                 n += 1
 
     def _update_motors(self):

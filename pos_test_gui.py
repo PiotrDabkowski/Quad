@@ -222,8 +222,8 @@ class Motor:
 
 
 PRINTED = False
-X = visual.vector(1,0,0)
-Y = visual.vector(0,1,0)
+X = visual.vector(1,-1,0)
+Y = visual.vector(1,1,0)
 Z = visual.vector(0,0,1)
 
 def stat_updater():
@@ -235,10 +235,10 @@ def stat_updater():
             show = status['t'] + delay
             dif = show-time.time()
             if dif>0:
-                print dif
+                #print dif
                 visual.sleep(dif)
             else:
-                print "LATE"
+                pass
             show_status(status)
         visual.sleep(0.01)
 
@@ -262,7 +262,8 @@ q.render()
 
 link = Link(quad=False)
 # IN handlers
-out_handlers = [OutCommander()]
+com = OutCommander()
+out_handlers = [com]
 # OUT handlers - they will be accessed directly so they need to have separate names
 messenger = InInfo(None)
 updater = InStatus(None, on_status_update=None )
@@ -276,4 +277,7 @@ out.daemon = inp.daemon = True
 out.start()
 inp.start()
 
-stat_updater()
+#stat_updater()
+
+import code
+code.InteractiveConsole(globals()).interact()

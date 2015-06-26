@@ -1,3 +1,8 @@
+try:
+    import RPIO
+except:
+    raise ImportError('You can only run this module on raspberry pi connected to Quad :)')
+
 from threading import Thread
 import time
 import RTIMU
@@ -81,6 +86,7 @@ class Quad:
         imu.setAccelEnable(True)
         imu.setCompassEnable(True)
         poll_interval = imu.IMUGetPollInterval()
+        self.messenger.send('Started polling IMU...')
         while True:
             if imu.IMURead():
                 x, y, z = imu.getFusionData()

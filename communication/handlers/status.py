@@ -36,20 +36,18 @@ class OutStatus(OutHandler):
 
 class InStatus(InHandler):
     ID = 19
-    def __init__(self, gui):
+    def __init__(self, gui, on_status_update=None):
         self.status_seq = deque()
         self.gui = gui
+        self.on_status_update = on_status_update
 
-    def on_status_update(self, status):
-        pass
 
     def handle(self, req):
         status = json.loads(req)
         stamp = status.get('t')
         if stamp is not None:
             status['t'] = from_stamp(stamp)
-        print status
-        print time.time()
         self.status_seq.append(status)
-        self.on_status_update(status)
+        if self.on_status_update:
+            self.on_status_update(status)
 

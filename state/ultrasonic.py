@@ -30,6 +30,7 @@ class Ultrasonic:
             return
         self._RUNNING = True
         self._t = threading.Thread(target=self._measure)
+        self._t.deamon = True
         self._t.start()
 
     def _measure(self):

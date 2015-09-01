@@ -5,7 +5,7 @@ except:
     raise ImportError('You can only run this module on raspberry pi connected to Quad :)')
 
 from threading import Thread
-import time
+import time, math
 
 
 
@@ -95,11 +95,12 @@ class Quad:
         print 'sep', sep
         while True:
             if imu.IMURead():
-                # print("%f %f %f" % (x,y,z))
-                print imu.getAccelResiduals()
+                #print imu.getCompass()
                 data = imu.getIMUData()
                 (data["pressureValid"], data["pressure"], data["temperatureValid"],
                  data["temperature"]) = pressure.pressureRead()
+                #fusionPose = data["fusionPose"]
+                #print("r: %f p: %f y: %f" % (math.degrees(fusionPose[0]), math.degrees(fusionPose[1]), math.degrees(fusionPose[2])))               
                 self._status = data
                 if not n%sep:
                     self.updater.send_status()

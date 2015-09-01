@@ -10,6 +10,7 @@ from communication.out_handle import OutPost
 
 import random
 import time
+from math import *
 import visual
 from PIL import Image
 color = visual.color
@@ -221,63 +222,45 @@ class Motor:
         return t, t/self.tr2to*(1.0 if self.pos_tor else -1.0)
 
 
-PRINTED = False
-X = visual.vector(1,-1,0)
-Y = visual.vector(1,1,0)
-Z = visual.vector(0,0,1)
-
-def stat_updater():
-    delay = 1
-    feed = updater.status_seq
-    while True:
-        while feed:
-            status = feed.popleft()
-            show = status['t'] + delay
-            dif = show-time.time()
-            if dif>0:
-                #print dif
-                visual.sleep(dif)
-            else:
-                pass
-            show_status(status)
-        visual.sleep(0.01)
 
 
-def show_status(status):
-    r, p, y = status["fusionPose"]
+def show_state():
+    x, y, z, w = imu.get_quaternion()
+    yaw   =  atan2(2*x*y + 2*w*z, w*w + x*x - y*y - z*z)
+    pitch = -asin(2*w*y - 2*x*z)
+    roll  = -atan2(2*y*z + 2*w*x, -w*w + x*x + y*y - z*z)
+    print roll/pi*180
+    ang = math.acos(w)*2
+    fac = math.sin(ang/2)
+    axis = visual.vector((x/fac, y/fac, z/fac))
     q.reset_rotation()
-    q.rotate(p, X)
-    q.rotate(r, Y)
-    q.rotate(y, Z)
-    q.render()
+    q.rotate(math.pi, visual.vector((0,1,0)))
+    q.rotate(ang, axis)
+   # q.render()
 
 
 
+HOST = "192.168.1.155"
+PORT = 4223
+UID = '6qYGR7' # Change to your UID
+
+from tinkerforge.ip_connection import IPConnection
+from tinkerforge.brick_imu import BrickIMU
+import math
+
+ipcon = IPConnection()
+imu = BrickIMU(UID, ipcon)
+
+ipcon.connect(HOST, PORT)
 
 
 q = Quad()
-z = visual.vector(0,0,1)
 q.pos = visual.vector(0,0,0)
 q.render()
 
-link = Link(quad=False)
-# IN handlers
-com = OutCommander()
-out_handlers = [com]
-# OUT handlers - they will be accessed directly so they need to have separate names
-messenger = InInfo(None)
-updater = InStatus(None, on_status_update=None )
-in_handlers = [messenger, updater]
-# Initialise posts, they will not be called directly.
-in_post = InPost(link, handlers=in_handlers)
-out_post = OutPost(link, handlers=out_handlers)
-out = Thread(target=in_post._handle_loop)  # executes commands from master
-inp = Thread(target=out_post._handle_loop)  # sends important parameters to the master
-out.daemon = inp.daemon = True
-out.start()
-inp.start()
-
-#stat_updater()
-
-import code
-code.InteractiveConsole(globals()).interact()
+try:
+    while True:
+        visual.sleep(0.1)
+        show_state()
+finally:
+    ipcon.disconnect()
